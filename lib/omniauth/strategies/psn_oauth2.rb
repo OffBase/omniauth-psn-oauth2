@@ -14,9 +14,24 @@ module OmniAuth
       # option :authorize_options, [:access_type, :hd, :login_hint, :prompt, :request_visible_actions, :scope, :state, :redirect_uri, :include_granted_scopes]
       option :client_options, {
         :site          => 'https://auth.api.sp-int.sonyentertainmentnetwork.com',
-        :authorize_url => '/2.0/oauth/token',
-        :token_url     => '/2.0/oauth/token/access_token'
+        :authorize_url => '/2.0/oauth/authorize',
+        :token_url     => '/2.0/oauth/token'
       }
+      option :service_entity, 'urn:service-entity:psn'
+      option :authorize_options, [:service_entity, :response_type, :client_id, :redirect_uri, :scope]
+
+      def request_phase
+        puts '*'*10, authorize_params, client.auth_code.authorize_url({:redirect_uri => callback_url}.merge(authorize_params))
+        redirect client.auth_code.authorize_url({:redirect_uri => callback_url}.merge(authorize_params))
+      end
+
+      def callback_phase
+        ENV['OAUTH_DEBUG'] = 'true'
+        puts '*'*20, 'callback_phase'
+        options.token_params["Authorization"] = client.connection.basic_auth(options.client_id, options.client_secret)
+        # byebug
+        super
+      end
 
       # def authorize_params
       #   super.tap do |params|
@@ -90,7 +105,11 @@ module OmniAuth
       # alias_method :orig_build_access_token, :build_access_token
       # alias :build_access_token :custom_build_access_token
 
-      # private
+      private
+
+      # def service_entity
+      #   'urn:service-entity:psn'
+      # end
 
       # def prune!(hash)
       #   hash.delete_if do |_, v|
