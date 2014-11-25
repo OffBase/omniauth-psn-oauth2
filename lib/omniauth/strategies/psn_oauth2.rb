@@ -19,6 +19,7 @@ module OmniAuth
       option :authorize_options, [:service_entity, :response_type, :client_id, :redirect_uri, :scope]
 
       def request_phase
+        client.connection.scheme = 'https'
         redirect client.auth_code.authorize_url({:redirect_uri => callback_url}.merge(authorize_params))
       end
 
