@@ -21,8 +21,8 @@ module OmniAuth
 
       option :client_options, {
         :site          => "https://auth.api.#{psn_auth_env}sonyentertainmentnetwork.com",
-        :authorize_url => '/2.0/oauth/authorize',
-        :token_url     => '/2.0/oauth/token',
+        :authorize_url => "https://auth.api.#{psn_auth_env}sonyentertainmentnetwork.com/2.0/oauth/authorize",
+        :token_url     => "https://auth.api.#{psn_auth_env}sonyentertainmentnetwork.com/2.0/oauth/token",
         :info_url      => "https://vl.api.#{psn_env}.ac.playstation.net/vl/api/v1/s2s/users/me/info"
       }
       option :service_entity, 'urn:service-entity:psn'
@@ -56,7 +56,7 @@ module OmniAuth
 
       def raw_info
         auth_headers = { Authorization: client.connection.basic_auth(options.client_id, options.client_secret) }
-        @raw_info ||= JSON.parse(self.client.connection.run_request(:get, "https://auth.api.#{psn_env}.sonyentertainmentnetwork.com/2.0/oauth/token/#{self.access_token.token}", '',  auth_headers).body)
+        @raw_info ||= JSON.parse(self.client.connection.run_request(:get, "https://auth.api.#{self.class.psn_auth_env}sonyentertainmentnetwork.com/2.0/oauth/token/#{self.access_token.token}", '',  auth_headers).body)
       rescue ::Errno::ETIMEDOUT
         raise ::Timeout::Error
       end
