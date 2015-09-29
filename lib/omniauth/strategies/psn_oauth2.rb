@@ -5,7 +5,7 @@ module OmniAuth
     class PsnOauth2 < OmniAuth::Strategies::OAuth2
 
       def self.psn_env
-        ::CORE_SETTINGS[:psn][:env] || "sp-int"
+        Rails.application.secrets.psn_env || "sp-int"
       end
 
       def self.psn_auth_env
