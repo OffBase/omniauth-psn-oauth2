@@ -4,8 +4,16 @@ module OmniAuth
   module Strategies
     class PsnOauth2 < OmniAuth::Strategies::OAuth2
 
+      @@configuration = {
+        psn_env: "sp-int"
+      }
+
+      def self.config= hash = {}
+        @@configuration.merge! hash
+      end
+
       def self.psn_env
-        Rails.application.secrets.psn_env || "sp-int"
+        @@configuration[:psn_env]
       end
 
       def self.psn_auth_env
