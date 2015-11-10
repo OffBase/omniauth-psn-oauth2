@@ -41,10 +41,18 @@ module OmniAuth
         redirect client.auth_code.authorize_url({:redirect_uri => callback_url.gsub(/https?/,'https')}.merge(authorize_params))
       end
 
-      def callback_phase
+      def build_access_token
+        # generate Authorization header
         auth = client.connection.basic_auth(options.client_id, options.client_secret)
-        options.token_params["Authorization"] = auth
-        super
+        options.token_params[:headers] = { "Authorization" => auth }
+
+        # remove code and state from callback_url
+        filtered_query_string = query_string.split('&').reject { |param| param =~ /code=|state=/ }.join
+        url = full_host + script_name + callback_path + filtered_query_string
+
+        # original implementation using url instead of callback_url
+        verifier = request.params["code"]
+        client.auth_code.get_token(verifier, {:redirect_uri => url}.merge(token_params.to_hash(:symbolize_keys => true)), deep_symbolize(options.auth_token_params))
       end
 
       uid { raw_info['user_id'] }
