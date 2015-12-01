@@ -4,38 +4,33 @@ module OmniAuth
   module Strategies
     class PsnOauth2 < OmniAuth::Strategies::OAuth2
 
-      @@configuration = {
-        psn_env: "sp-int"
-      }
+      option :name, 'psn_oauth2'
+      option :service_entity, 'urn:service-entity:psn'
+      option :authorize_options, [:service_entity, :response_type, :client_id, :redirect_uri, :scope]
 
-      def self.config= hash = {}
-        @@configuration.merge! hash
+      def self.psn_env= value = 'sp-int'
+        option :psn_env, value
+        set_client_options
       end
 
       def self.psn_env
-        @@configuration[:psn_env]
+        default_options[:psn_env]
       end
 
       def self.psn_auth_env
-        psn_auth_env = self.psn_env
-        psn_auth_env == 'np' ? '' : "#{psn_auth_env}."
+        psn_env == 'np' ? '' : "#{psn_env}."
+      end
+
+      def self.set_client_options
+        option :client_options, {
+          site: "https://auth.api.#{psn_auth_env}sonyentertainmentnetwork.com",
+          info_url: "https://vl.api.#{psn_env}.ac.playstation.net/vl/api/v1/s2s/users/me/info"
+        }
       end
 
       def psn_env
         self.class.psn_env
       end
-
-      option :name, 'psn_oauth2'
-
-      option :client_options, {
-        :site          => "https://auth.api.#{psn_auth_env}sonyentertainmentnetwork.com",
-        :authorize_url => "https://auth.api.#{psn_auth_env}sonyentertainmentnetwork.com/2.0/oauth/authorize",
-        :token_url     => "https://auth.api.#{psn_auth_env}sonyentertainmentnetwork.com/2.0/oauth/token",
-        :info_url      => "https://vl.api.#{psn_env}.ac.playstation.net/vl/api/v1/s2s/users/me/info"
-      }
-      option :service_entity, 'urn:service-entity:psn'
-      option :authorize_options, [:service_entity, :response_type, :client_id, :redirect_uri, :scope]
-
 
       def request_phase
         redirect client.auth_code.authorize_url({:redirect_uri => callback_url.gsub(/https?/,'https')}.merge(authorize_params))
