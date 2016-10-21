@@ -17,6 +17,14 @@ module OmniAuth
         default_options[:psn_env]
       end
 
+      def self.force_ssl= value = true
+        @force_ssl = value
+      end
+
+      def self.force_ssl
+        @force_ssl
+      end
+
       def self.psn_auth_env
         psn_env == 'np' ? '' : "#{psn_env}."
       end
@@ -33,7 +41,15 @@ module OmniAuth
       end
 
       def request_phase
-        redirect client.auth_code.authorize_url({:redirect_uri => callback_url.gsub(/https?/,'https')}.merge(authorize_params))
+        redirect client.auth_code.authorize_url({:redirect_uri => redirect_uri.merge(authorize_params)})
+      end
+
+      def redirect_uri
+        if self.force_ssl
+          callback_url.gsub(/https?/,'https')
+        else
+          callback_url
+        end
       end
 
       def build_access_token
