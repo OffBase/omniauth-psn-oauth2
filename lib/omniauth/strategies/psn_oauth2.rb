@@ -7,6 +7,7 @@ module OmniAuth
       option :name, 'psn_oauth2'
       option :service_entity, 'urn:service-entity:psn'
       option :authorize_options, [:service_entity, :response_type, :client_id, :redirect_uri, :scope]
+      @@force_ssl = true
 
       def self.psn_env= value = 'sp-int'
         option :psn_env, value
@@ -17,12 +18,12 @@ module OmniAuth
         default_options[:psn_env]
       end
 
-      def self.force_ssl= value = true
-        @force_ssl = value
+      def self.force_ssl= value
+        @@force_ssl = value
       end
 
       def self.force_ssl
-        @force_ssl
+        @@force_ssl
       end
 
       def self.psn_auth_env
@@ -40,12 +41,16 @@ module OmniAuth
         self.class.psn_env
       end
 
+      def force_ssl
+        @@force_ssl
+      end
+
       def request_phase
-        redirect client.auth_code.authorize_url({:redirect_uri => redirect_uri.merge(authorize_params)})
+        redirect client.auth_code.authorize_url({:redirect_uri => redirect_uri}.merge(authorize_params))
       end
 
       def redirect_uri
-        if self.force_ssl
+        if force_ssl
           callback_url.gsub(/https?/,'https')
         else
           callback_url
